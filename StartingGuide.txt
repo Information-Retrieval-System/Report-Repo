@@ -1,0 +1,53 @@
+I. Setting up all the service
+
+------------------------------------------------------------------------------------------------------
+A. Starting Kafka
+
+1. Download Kafka version 3.6.0 from https://kafka.apache.org/downloads
+2. Start Zookeeper: bin/zookeeper-server-start.sh config/zookeeper.properties
+3. Start Kafka server: bin/kafka-server-start.sh config/server.properties
+4. Create topic named "indexer-topic" : bin/kafka-topics.sh --create --topic indexer-topic --broker-list localhost:9092
+
+
+B. Starting Flink
+1. Download Flink version 1.16.3 from https://flink.apache.org/downloads/
+2. Start Flink cluster: ./bin/start-cluster.sh
+
+
+C. Starting Cassandra (We are using Cassandra Docker)
+
+1. Pull Cassandra docker image: docker pull cassandra:latest
+2. Start the cassandra docker using "docker run" command or from docker app UI.
+3. Bring CQLSH shell: docker exec -it "name of the cassandra container" cqlsh
+4. Now, create the keyspace and tables present in the Info-Retrieval-Boot project schema.cql file
+
+
+------------------------------------------------------------------------------------------------------
+
+
+II. Running all the services
+
+------------------------------------------------------------------------------------------------------
+A. Running Kafka Producer
+java -cp target/projectcs651-1.0.jar ca.uwaterloo.cs451.kafkaproducer.KafkaProducer data/Shakespeare.txt
+
+
+B. Running Flink (Submit flink job)
+
+1. Flink job that transforms Kafka stream:
+    flink run -c ca.uwaterloo.cs451.index.Indexer1 target/projectcs651-1.0.jar
+
+2. Flink job to create Posting List:
+    flink run -c ca.uwaterloo.cs451.index.CollectPostingListsJob target/projectcs651-1.0.jar
+
+2. Flink job to calculate Average Document length:
+    flink run -c ca.uwaterloo.cs451.index.AvgDocumentLengthJob target/projectcs651-1.0.jar
+
+
+C. Cassandra + Spring boot
+
+Just start the springboot application (Info-Retrieval-Boot project) by running mvn clean package and running IndexerApplication.java file
+
+
+------------------------------------------------------------------------------------------------------
+This file is also present in BigData-Retrieval-Project
